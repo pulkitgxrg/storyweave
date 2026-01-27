@@ -3,25 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bookstore</title>
+    <title>StoryWeave - Online Bookstore</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <header>
-        <div class="container">
-            <h1><a href="/">Bookstore</a></h1>
-            <nav>
-                <a href="/">Books</a>
-                <a href="/cart">Cart</a>
+        <div class="header-top">
+            <a href="/" class="logo">StoryWeave</a>
+            
+            <form action="/search" method="GET" class="search-bar">
+                <input type="text" name="q" placeholder="Search by title, author, or ISBN" value="{{ request.args.get('q', '') }}">
+                <button type="submit">Search</button>
+            </form>
+            
+            <div class="header-actions">
+                <a href="/cart" class="btn-cart">
+                    <span>🛒</span>
+                    <span id="cart-total">${{ "%.2f"|format(cart_total if cart_total else 0) }}</span>
+                </a>
+                
                 {% if session.user_id %}
-                    <a href="/logout">Logout</a>
+                    <div class="user-menu" style="display: flex; gap: 10px; align-items: center;">
+                        <span style="font-weight: 600;">Hi, User</span>
+                        {% if session.is_admin %}
+                            <a href="/admin" style="color:red; font-weight:bold;">Admin</a>
+                        {% endif %}
+                        <a href="/logout" class="btn-auth">Logout</a>
+                    </div>
                 {% else %}
-                    <a href="/login">Login</a>
-                    <a href="/register">Register</a>
+                    <a href="/login" class="btn-auth">Login</a>
+                    <a href="/register" class="btn-auth" style="background:var(--primary); color:white; border:none;">Sign Up</a>
                 {% endif %}
-            </nav>
+            </div>
         </div>
+        
+        <nav class="nav-secondary">
+            <div class="container">
+                <a href="/" class="nav-link active">Home</a>
+                <a href="/?filter=new" class="nav-link">New releases</a>
+                <a href="/?filter=bestsellers" class="nav-link">Bestsellers</a>
+                <a href="#" class="nav-link">Books ▾</a>
+                <a href="#" class="nav-link">Audiobooks ▾</a>
+                <a href="#" class="nav-link">Sale</a>
+            </div>
+        </nav>
     </header>
+
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, message in messages %}
@@ -29,13 +59,25 @@
             {% endfor %}
         {% endif %}
     {% endwith %}
-    <main class="container">
+
+    <main>
         {% block body %}{% endblock %}
     </main>
+
     <footer>
-        <div class="container">
-            <p>&copy; 2025 Bookstore. All rights reserved.</p>
-        </div>
+        <p>&copy; 2026 StoryWeave. All rights reserved.</p>
     </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                const flashes = document.querySelectorAll('.flash');
+                flashes.forEach(flash => {
+                    flash.style.animation = 'fadeOut 0.5s ease-out forwards';
+                    setTimeout(() => flash.remove(), 500);
+                });
+            }, 3000);
+        });
+    </script>
 </body>
 </html>
