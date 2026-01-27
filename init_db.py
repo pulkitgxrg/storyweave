@@ -1,7 +1,7 @@
 import sqlite3
 
 conn = sqlite3.connect("store.db")
-query = conn.query()
+query = conn.cursor()
 
 query.execute("""
 CREATE TABLE IF NOT EXISTS books (
