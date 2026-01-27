@@ -1,0 +1,78 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<div class="main-grid">
+    <aside class="sidebar">
+        <form action="/search" method="GET" id="filter-form">
+            <input type="hidden" name="q" value="{{ query }}">
+            <div class="filter-group">
+                <div class="filter-title">
+                    <span>Category</span>
+                    <span style="font-weight:400; font-size:0.85rem; color:var(--primary); cursor:pointer;" onclick="document.getElementById('filter-form').submit()">Apply</span>
+                </div>
+                <div class="checkbox-list">
+                    {% for cat in categories %}
+                    <div class="checkbox-item">
+                        <label>
+                            <input type="radio" name="category" value="{{ cat['category'] }}" 
+                                {% if request.args.get('category') == cat['category'] %}checked{% endif %}
+                                onchange="this.form.submit()">
+                            {{ cat['category'] }}
+                        </label>
+                    </div>
+                    {% endfor %}
+                    <div class="checkbox-item">
+                        <label>
+                            <input type="radio" name="category" value="" 
+                                {% if not request.args.get('category') %}checked{% endif %}
+                                onchange="this.form.submit()">
+                            All Categories
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </aside>
+
+    <div class="content-area">
+        <header>
+            <h2 style="font-size: 1.5rem; font-weight: 700;">
+                {% if query %}
+                    Search results for "{{ query }}"
+                {% else %}
+                    Search Results
+                {% endif %}
+            </h2>
+            <div class="sort-options" style="color:var(--text-muted); font-size:0.9rem;">
+                Found {{ books|length }} result(s)
+            </div>
+        </header>
+
+        {% if books %}
+        <div class="books-grid">
+            {% for book in books %}
+            <div class="book-card">
+                <img src="{{ book.image_url }}" alt="{{ book.title }}" class="book-image">
+                <div class="book-info">
+                    <h3>{{ book.title }}</h3>
+                    <p class="book-author">{{ book.author }}</p>
+                    <div class="book-footer">
+                        <span class="book-price">${{ book.price }}</span>
+                        <form action="/cart" method="POST">
+                            <input type="hidden" name="id" value="{{ book.id }}">
+                            <button type="submit" class="btn-buy">Buy</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-cart" style="margin-top: 2rem;">
+            <p style="font-size: 1.1rem; margin-bottom: 1rem;">No books found matching your search.</p>
+            <a href="/" class="btn" style="display:inline-block; width:auto;">Browse All Books</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

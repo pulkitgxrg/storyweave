@@ -1,40 +1,42 @@
 {% extends "layout.html" %}
 
 {% block body %}
-<div class="admin-header">
-    <h2>Admin Dashboard</h2>
-    <a href="/admin/book/new" class="btn">Add New Book</a>
-</div>
+<div class="admin-container">
+    <div class="admin-header">
+        <h2>Admin Dashboard</h2>
+        <a href="/admin/book/new" class="btn">Add New Book</a>
+    </div>
 
-<div class="table-container">
-    <table class="admin-table">
-        <thead>
-            <tr>
-                <th>Cover</th>
-                <th>Title</th>
-                <th>Author</th>
-                <th>Category</th>
-                <th>Price</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for book in books %}
-            <tr>
-                <td><img src="{{ book.image_url }}" alt="{{ book.title }}"></td>
-                <td>{{ book.title }}</td>
-                <td>{{ book.author }}</td>
-                <td>{{ book.category }}</td>
-                <td>${{ book.price }}</td>
-                <td>
-                    <a href="/admin/book/edit/{{ book.id }}" class="btn btn-small">Edit</a>
-                    <form action="/admin/book/delete/{{ book.id }}" method="POST" style="display:inline;">
-                        <button type="submit" class="btn btn-danger btn-small" onclick="return confirm('Are you sure?')">Delete</button>
-                    </form>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="table-container">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Cover</th>
+                    <th>Title</th>
+                    <th>Author</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for book in books %}
+                <tr>
+                    <td><img src="{{ book.image_url }}" alt="{{ book.title }}"></td>
+                    <td>{{ book.title }}</td>
+                    <td>{{ book.author }}</td>
+                    <td>{{ book.category }}</td>
+                    <td>${{ book.price }}</td>
+                    <td>
+                        <a href="/admin/book/edit/{{ book.id }}" class="btn btn-small">Edit</a>
+                        <form action="/admin/book/delete/{{ book.id }}" method="POST" style="display:inline;">
+                            <button type="submit" class="btn btn-danger btn-small" onclick="return confirm('Are you sure?')">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% endblock %}

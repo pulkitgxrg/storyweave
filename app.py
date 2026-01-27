@@ -245,7 +245,9 @@ def checkout():
                     "book_id": book["id"],
                     "quantity": item["quantity"],
                     "price": book["price"],
-                    "title": book["title"]
+                    "title": book["title"],
+                    "author": book["author"],
+                    "image_url": book["image_url"]
                 })
 
     if request.method == "POST":
@@ -353,4 +355,4 @@ def delete_book(book_id):
     return redirect(url_for("admin_dashboard"))
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port=5001)
