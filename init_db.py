@@ -7,6 +7,7 @@ cursor = conn.cursor()
 cursor.execute("PRAGMA foreign_keys = ON")
 
 cursor.executescript("""
+DROP TABLE IF EXISTS reviews;
 DROP TABLE IF EXISTS order_items;
 DROP TABLE IF EXISTS orders;
 DROP TABLE IF EXISTS books;
@@ -18,7 +19,11 @@ CREATE TABLE users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT NOT NULL UNIQUE,
     password TEXT NOT NULL,
-    is_admin BOOLEAN NOT NULL DEFAULT 0
+    is_admin BOOLEAN NOT NULL DEFAULT 0,
+    full_name TEXT,
+    address TEXT,
+    city TEXT,
+    zip_code TEXT
 )
 """)
 
@@ -35,11 +40,24 @@ CREATE TABLE books (
 """)
 
 cursor.execute("""
+CREATE TABLE reviews (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    book_id INTEGER NOT NULL,
+    rating INTEGER NOT NULL,
+    comment TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users (id),
+    FOREIGN KEY (book_id) REFERENCES books (id)
+)
+""")
+
+cursor.execute("""
 CREATE TABLE orders (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
     total_amount REAL NOT NULL,
-    status TEXT NOT NULL DEFAULT 'completed',
+    status TEXT NOT NULL DEFAULT 'Pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users (id)
 )
@@ -58,9 +76,9 @@ CREATE TABLE order_items (
 """)
 
 admin_pass = generate_password_hash("admin123")
-cursor.execute("INSERT INTO users (username, password, is_admin) VALUES (?, ?, ?)", ("admin", admin_pass, 1))
+cursor.execute("INSERT INTO users (username, password, is_admin, full_name) VALUES (?, ?, ?, ?)", ("admin", admin_pass, 1, "Admin User"))
 user_pass = generate_password_hash("password")
-cursor.execute("INSERT INTO users (username, password, is_admin) VALUES (?, ?, ?)", ("user", user_pass, 0))
+cursor.execute("INSERT INTO users (username, password, is_admin, full_name) VALUES (?, ?, ?, ?)", ("user", user_pass, 0, "Demo User"))
 
 books = [
     ('The Great Gatsby', 'F. Scott Fitzgerald', 'Fiction', 9.99, 'https://upload.wikimedia.org/wikipedia/commons/7/7a/The_Great_Gatsby_Cover_1925_Retouched.jpg', 'A classic novel about the American Dream'),

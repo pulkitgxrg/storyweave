@@ -1,0 +1,83 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<div class="cart-container" style="max-width: 1200px;">
+    <!-- Book Details Section -->
+    <div style="display: grid; grid-template-columns: 300px 1fr; gap: 3rem; margin-bottom: 4rem;">
+        <img src="{{ book.image_url }}" alt="{{ book.title }}" style="width: 100%; border-radius: 8px; box-shadow: var(--shadow);">
+        <div>
+            <h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem;">{{ book.title }}</h1>
+            <p style="font-size: 1.25rem; color: var(--text-muted); margin-bottom: 1.5rem;">by {{ book.author }}</p>
+            
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+                <span class="book-price" style="font-size: 1.5rem;">${{ book.price }}</span>
+                {% if avg_rating %}
+                <span style="background: #fef3c7; color: #d97706; padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: 700; font-size: 0.9rem;">
+                    ★ {{ "%.1f"|format(avg_rating) }}
+                </span>
+                {% endif %}
+            </div>
+
+            <p style="line-height: 1.7; color: var(--text-main); margin-bottom: 2rem;">
+                {{ book.description or 'No description available.' }}
+            </p>
+
+            <form action="/cart" method="POST" style="display: flex; gap: 1rem;">
+                <input type="hidden" name="id" value="{{ book.id }}">
+                <input type="number" name="quantity" value="1" min="1" style="width: 80px; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); text-align: center;">
+                <button type="submit" class="btn" style="width: auto; padding: 0 2rem;">Add to Cart</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Reviews Section -->
+    <div style="max-width: 800px;">
+        <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 2rem;">Customer Reviews</h2>
+
+        {% if session.user_id %}
+        <div class="checkout-section" style="margin-bottom: 3rem;">
+            <h3>Write a Review</h3>
+            <form action="/book/{{ book.id }}/review" method="POST">
+                <div class="form-group">
+                    <label>Rating</label>
+                    <select name="rating" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); background: #f9fafb;">
+                        <option value="5">5 - Excellent</option>
+                        <option value="4">4 - Good</option>
+                        <option value="3">3 - Average</option>
+                        <option value="2">2 - Fair</option>
+                        <option value="1">1 - Poor</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Review</label>
+                    <textarea name="comment" rows="4" required placeholder="Share your thoughts..." style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); background: #f9fafb; font-family: inherit;"></textarea>
+                </div>
+                <button type="submit" class="btn">Submit Review</button>
+            </form>
+        </div>
+        {% else %}
+        <div style="background: #f3f4f6; padding: 1.5rem; border-radius: var(--radius); margin-bottom: 3rem; text-align: center;">
+            <p>Please <a href="/login" style="color: var(--primary); font-weight: 600;">log in</a> to write a review.</p>
+        </div>
+        {% endif %}
+
+        <div class="reviews-list">
+            {% for review in reviews %}
+            <div style="border-bottom: 1px solid var(--border); padding-bottom: 1.5rem; margin-bottom: 1.5rem;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span style="font-weight: 700;">{{ review.full_name or review.username }}</span>
+                    <span style="color: var(--text-muted); font-size: 0.9rem;">{{ review.created_at.split(' ')[0] }}</span>
+                </div>
+                <div style="color: #d97706; margin-bottom: 0.75rem;">
+                    {% for _ in range(review.rating) %}★{% endfor %}
+                    {% for _ in range(5 - review.rating) %}☆{% endfor %}
+                </div>
+                <p style="color: var(--text-main);">{{ review.comment }}</p>
+            </div>
+            {% else %}
+            <p style="color: var(--text-muted);">No reviews yet. Be the first to review this book!</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

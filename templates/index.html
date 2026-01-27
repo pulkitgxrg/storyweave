@@ -52,9 +52,13 @@
         <div class="books-grid">
             {% for book in books %}
             <div class="book-card">
-                <img src="{{ book.image_url }}" alt="{{ book.title }}" class="book-image">
-                <div class="book-info">
-                    <h3>{{ book.title }}</h3>
+                <a href="/book/{{ book.id }}" style="display: block; color: inherit;">
+                    <img src="{{ book.image_url }}" alt="{{ book.title }}" class="book-image">
+                    <div class="book-info">
+                        <h3>{{ book.title }}</h3>
+                    </div>
+                </a>
+                <div class="book-info" style="padding-top: 0;">
                     <p class="book-author">{{ book.author }}</p>
                     <div class="book-footer">
                         <span class="book-price">${{ book.price }}</span>

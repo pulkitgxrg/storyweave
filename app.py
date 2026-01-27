@@ -180,8 +180,10 @@ def login():
         
         if user and check_password_hash(user["password"], password):
             session["user_id"] = user["id"]
+            session["username"] = user["username"]
+            session["full_name"] = user["full_name"]
             session["is_admin"] = bool(user["is_admin"])
-            flash(f"Welcome back, {username}!", "success")
+            flash(f"Welcome back, {user['full_name'] or user['username']}!", "success")
             return redirect("/")
         flash("Invalid credentials", "error")
     return render_template("login.html")
@@ -252,10 +254,11 @@ def checkout():
 
     if request.method == "POST":
         try:
+            conn = get_db_connection()
             cursor = conn.cursor()
             
             cursor.execute(
-                "INSERT INTO orders (user_id, total_amount) VALUES (?, ?)",
+                "INSERT INTO orders (user_id, total_amount, status) VALUES (?, ?, 'Pending')",
                 (session["user_id"], total_amount)
             )
             order_id = cursor.lastrowid
@@ -272,17 +275,58 @@ def checkout():
             session["cart"] = []
             session.modified = True
             flash("Order placed successfully! Thank you for your purchase.", "success")
-            return redirect("/")
+            return redirect("/profile")
             
         except Exception as e:
-            conn.rollback()
+            if 'conn' in locals():
+                conn.rollback()
             print(f"Checkout error: {e}")
             flash("An error occurred during checkout. Please try again.", "error")
         finally:
-            conn.close()
+            if 'conn' in locals():
+                conn.close()
 
     conn.close()
     return render_template("checkout.html", books=cart_items, total=total_amount)
+
+@app.route("/profile")
+@login_required
+def profile():
+    conn = get_db_connection()
+    user = conn.execute("SELECT * FROM users WHERE id = ?", (session["user_id"],)).fetchone()
+    
+    orders_db = conn.execute("""
+        SELECT o.id, o.total_amount, o.status, o.created_at, COUNT(oi.id) as item_count 
+        FROM orders o 
+        LEFT JOIN order_items oi ON o.id = oi.order_id 
+        WHERE o.user_id = ? 
+        GROUP BY o.id 
+        ORDER BY o.created_at DESC
+    """, (session["user_id"],)).fetchall()
+    
+    conn.close()
+    return render_template("profile.html", user=user, orders=orders_db)
+
+@app.route("/profile/update", methods=["POST"])
+@login_required
+def update_profile():
+    full_name = request.form.get("full_name")
+    address = request.form.get("address")
+    city = request.form.get("city")
+    zip_code = request.form.get("zip_code")
+    
+    conn = get_db_connection()
+    conn.execute("""
+        UPDATE users 
+        SET full_name = ?, address = ?, city = ?, zip_code = ? 
+        WHERE id = ?
+    """, (full_name, address, city, zip_code, session["user_id"]))
+    conn.commit()
+    conn.close()
+    
+    session["full_name"] = full_name
+    flash("Profile updated successfully", "success")
+    return redirect("/profile")
 
 @app.route("/admin")
 @admin_required
@@ -353,6 +397,48 @@ def delete_book(book_id):
     finally:
         conn.close()
     return redirect(url_for("admin_dashboard"))
+
+@app.route("/book/<int:book_id>")
+def book_detail(book_id):
+    conn = get_db_connection()
+    book = conn.execute("SELECT * FROM books WHERE id = ?", (book_id,)).fetchone()
+    
+    if not book:
+        flash("Book not found", "error")
+        return redirect("/")
+        
+    reviews = conn.execute("""
+        SELECT r.*, u.username, u.full_name 
+        FROM reviews r 
+        JOIN users u ON r.user_id = u.id 
+        WHERE r.book_id = ? 
+        ORDER BY r.created_at DESC
+    """, (book_id,)).fetchall()
+    
+    avg_rating = conn.execute("SELECT AVG(rating) FROM reviews WHERE book_id = ?", (book_id,)).fetchone()[0]
+    
+    conn.close()
+    return render_template("book_detail.html", book=book, reviews=reviews, avg_rating=avg_rating)
+
+@app.route("/book/<int:book_id>/review", methods=["POST"])
+@login_required
+def add_review(book_id):
+    rating = int(request.form.get("rating"))
+    comment = request.form.get("comment")
+    
+    conn = get_db_connection()
+    
+    # Check if already reviewed? Optional. Let's allow multiple for simplicity unless restricted.
+    
+    conn.execute(
+        "INSERT INTO reviews (user_id, book_id, rating, comment) VALUES (?, ?, ?, ?)",
+        (session["user_id"], book_id, rating, comment)
+    )
+    conn.commit()
+    conn.close()
+    
+    flash("Review submitted successfully!", "success")
+    return redirect(url_for('book_detail', book_id=book_id))
 
 if __name__ == "__main__":
     app.run(debug=True, port=5001)

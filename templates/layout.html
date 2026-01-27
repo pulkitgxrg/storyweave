@@ -27,7 +27,7 @@
                 
                 {% if session.user_id %}
                     <div class="user-menu" style="display: flex; gap: 10px; align-items: center;">
-                        <span style="font-weight: 600;">Hi, User</span>
+                        <a href="/profile" style="font-weight: 600; text-decoration: none;">{{ session.full_name or session.username or 'User' }}</a>
                         {% if session.is_admin %}
                             <a href="/admin" style="color:red; font-weight:bold;">Admin</a>
                         {% endif %}
