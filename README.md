@@ -2,7 +2,7 @@
 
 ![LICENSE](https://img.shields.io/badge/LICENSE-MIT-blue) ![Built with](https://img.shields.io/badge/Built_with-Flask-red)
 
-![book-store](https://socialify.git.ci/pulkitgxrg/book-store/image?custom_language=Python&language=1&name=1&owner=1&theme=Dark)
+![book-store](https://socialify.git.ci/pulkitgxrg/storyweave/image?custom_language=Python&language=1&name=1&owner=1&theme=Dark)
 
 A simple Flask-based web application to browse books, add them to a cart, and view the cart. This project features a clean UI with support for book images, uses a SQLite database, and Flask-Session for managing user sessions.
 
